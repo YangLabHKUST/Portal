@@ -13,7 +13,7 @@ from sklearn.decomposition import PCA, IncrementalPCA
 from portal.networks import *
 
 class Model(object):
-    def __init__(self, batch_size=500, training_steps=1000, seed=1234, npcs=30, n_latent=20, lambdacos=10.0,
+    def __init__(self, batch_size=500, training_steps=1000, seed=1234, npcs=30, n_latent=20, lambdacos=20.0,
                  model_path="models", data_path="data", result_path="results"):
 
         # add device

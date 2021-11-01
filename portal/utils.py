@@ -75,14 +75,11 @@ def preprocess_datasets(adata_list, # list of anndata to be integrated
 
 def integrate_datasets(lowdim_list, # list of low-dimensional representations
                        search_cos=False, # searching for an optimal lambdacos
-                       lambda_cos=10.0,
-                       training_steps=None,
+                       lambda_cos=20.0,
+                       training_steps=2000,
                        space=None, # None or "reference" or "latent"
                        data_path="data"
                        ):
-
-    if training_steps == None:
-        training_steps = 2000
 
     if space == None:
         if len(lowdim_list) == 2:
@@ -118,7 +115,7 @@ def integrate_datasets(lowdim_list, # list of low-dimensional representations
     else:
         for i in range(len(indices) - 1):
             print("Integrating the %d-th dataset to the 1-st dataset..." % (i + 2))
-            for lambda_cos in [10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0]:
+            for lambda_cos in [15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0]:
                 model = Model(lambdacos=lambda_cos,
                               training_steps=training_steps, 
                               data_path=os.path.join(data_path, "preprocess"), 
