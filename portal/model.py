@@ -310,7 +310,7 @@ class Model(object):
             loss_AE_B = torch.mean((x_Brecon - x_B)**2)
             loss_AE = loss_AE_A + loss_AE_B
 
-            # cosine similarity loss:
+            # cosine correspondence:
             loss_cos_A = (1 - torch.sum(F.normalize(x_AtoB, p=2) * F.normalize(x_A, p=2), 1)).mean()
             loss_cos_B = (1 - torch.sum(F.normalize(x_BtoA, p=2) * F.normalize(x_B, p=2), 1)).mean()
             loss_cos = loss_cos_A + loss_cos_B
@@ -411,7 +411,7 @@ class Model(object):
             loss_AE_B = torch.mean((x_Brecon - x_B)**2)
             loss_AE = loss_AE_A + loss_AE_B
 
-            # expression align loss:
+            # cosine correspondence:
             loss_cos_A = (1 - torch.sum(F.normalize(x_AtoB, p=2) * F.normalize(x_A, p=2), 1)).mean()
             loss_cos_B = (1 - torch.sum(F.normalize(x_BtoA, p=2) * F.normalize(x_B, p=2), 1)).mean()
             loss_cos = loss_cos_A + loss_cos_B
@@ -542,12 +542,8 @@ class Model(object):
 
         self.E_A = encoder(self.npcs, self.n_latent).to(self.device)
         self.E_B = encoder(self.npcs, self.n_latent).to(self.device)
-        # self.G_A = generator(self.npcs, self.n_latent).to(self.device)
-        # self.G_B = generator(self.npcs, self.n_latent).to(self.device)
         self.E_A.load_state_dict(torch.load(os.path.join(self.model_path, "ckpt.pth"))['E_A'])
         self.E_B.load_state_dict(torch.load(os.path.join(self.model_path, "ckpt.pth"))['E_B'])
-        # self.G_A.load_state_dict(torch.load(os.path.join(self.model_path, "ckpt.pth"))['G_A'])
-        # self.G_B.load_state_dict(torch.load(os.path.join(self.model_path, "ckpt.pth"))['G_B'])
 
         if not os.path.exists(self.result_path):
             os.makedirs(self.result_path)
@@ -564,28 +560,17 @@ class Model(object):
         f_latent_A.create_earray(f_latent_A.root, 'data', atom, (0, self.n_latent))
         f_latent_A.close()
 
-        # h5_x_AtoB = os.path.join(self.result_path, "x_AtoB.h5")
-        # f_x_AtoB = tables.open_file(h5_x_AtoB, mode='w')
-        # atom = tables.Float64Atom()
-        # f_x_AtoB.create_earray(f_x_AtoB.root, 'data', atom, (0, self.npcs))
-        # f_x_AtoB.close()
-
         f_latent_A = tables.open_file(h5_latent_A, mode='a')
         # f_x_AtoB = tables.open_file(h5_x_AtoB, mode='a')
         for i in range(N_A // self.batch_size):
             x_A = torch.from_numpy(f_A.root.data[i * self.batch_size: (i + 1) * self.batch_size]).float().to(self.device)
             z_A = self.E_A(x_A)
             f_latent_A.root.data.append(z_A.detach().cpu().numpy())
-            # x_AtoB = self.G_B(z_A)
-            # f_x_AtoB.root.data.append(x_AtoB.detach().cpu().numpy())
         if (N_A % self.batch_size) > 0:
             x_A = torch.from_numpy(f_A.root.data[(N_A // self.batch_size) * self.batch_size: N_A]).float().to(self.device)
             z_A = self.E_A(x_A)
             f_latent_A.root.data.append(z_A.detach().cpu().numpy())
             f_latent_A.close()
-            # x_AtoB = self.G_B(z_A)
-            # f_x_AtoB.root.data.append(x_AtoB.detach().cpu().numpy())
-            # f_x_AtoB.close()
 
         h5_latent_B = os.path.join(self.result_path, "latent_B.h5")
         f_latent_B = tables.open_file(h5_latent_B, mode='w')
@@ -593,28 +578,16 @@ class Model(object):
         f_latent_B.create_earray(f_latent_B.root, 'data', atom, (0, self.n_latent))
         f_latent_B.close()
 
-        # h5_x_BtoA = os.path.join(self.result_path, "x_BtoA.h5")
-        # f_x_BtoA = tables.open_file(h5_x_BtoA, mode='w')
-        # atom = tables.Float64Atom()
-        # f_x_BtoA.create_earray(f_x_BtoA.root, 'data', atom, (0, self.npcs))
-        # f_x_BtoA.close()
-
         f_latent_B = tables.open_file(h5_latent_B, mode='a')
-        # f_x_BtoA = tables.open_file(h5_x_BtoA, mode='a')
         for i in range(N_B // self.batch_size):
             x_B = torch.from_numpy(f_B.root.data[i * self.batch_size: (i + 1) * self.batch_size]).float().to(self.device)
             z_B = self.E_B(x_B)
             f_latent_B.root.data.append(z_B.detach().cpu().numpy())
-            # x_BtoA = self.G_A(z_B)
-            # f_x_BtoA.root.data.append(x_BtoA.detach().cpu().numpy())
         if (N_B % self.batch_size) > 0:
             x_B = torch.from_numpy(f_B.root.data[(N_B // self.batch_size) * self.batch_size: N_B]).float().to(self.device)
             z_B = self.E_B(x_B)
             f_latent_B.root.data.append(z_B.detach().cpu().numpy())
             f_latent_B.close()
-            # x_BtoA = self.G_A(z_B)
-            # f_x_BtoA.root.data.append(x_BtoA.detach().cpu().numpy())
-            # f_x_BtoA.close()
 
         end_time = time.time()
 
@@ -624,42 +597,3 @@ class Model(object):
         print("Ending time: ", time.asctime(time.localtime(end_time)))
         self.eval_time = end_time - begin_time
         print("Evaluating takes %.2f seconds" % self.eval_time)
-
-        # self.latent = np.concatenate((z_A.detach().cpu().numpy(), z_B.detach().cpu().numpy()), axis=0)
-        # self.data_Aspace = np.concatenate((self.emb_A, x_BtoA.detach().cpu().numpy()), axis=0)
-        # self.data_Bspace = np.concatenate((x_AtoB.detach().cpu().numpy(), self.emb_B), axis=0)
-
-        # if save_results:
-        #     if not os.path.exists(self.result_path):
-        #         os.makedirs(self.result_path)
-
-        #     np.save(os.path.join(self.result_path, "latent_A.npy"), z_A.detach().cpu().numpy())
-        #     np.save(os.path.join(self.result_path, "latent_B.npy"), z_B.detach().cpu().numpy())
-        #     np.save(os.path.join(self.result_path, "x_AtoB.npy"), x_AtoB.detach().cpu().numpy())
-        #     np.save(os.path.join(self.result_path, "x_BtoA.npy"), x_BtoA.detach().cpu().numpy())
-        #     if D_score:
-        #         np.save(os.path.join(self.result_path, "score_Aspace_A.npy"), score_D_A_A.detach().cpu().numpy())
-        #         np.save(os.path.join(self.result_path, "score_Bspace_A.npy"), score_D_B_A.detach().cpu().numpy())
-        #         np.save(os.path.join(self.result_path, "score_Bspace_B.npy"), score_D_B_B.detach().cpu().numpy())
-        #         np.save(os.path.join(self.result_path, "score_Aspace_B.npy"), score_D_A_B.detach().cpu().numpy())
-
-        # if save_DE:
-        #     pca_ = PCA(n_components=self.npcs, svd_solver="arpack", random_state=0)
-
-        #     pca_.mean_ = np.load(os.path.join(self.data_path, "PCA_mean.npy"))
-        #     pca_.components_ = np.load(os.path.join(self.data_path, "PCA_components.npy"))
-        #     pca_.explained_variance_ = np.load(os.path.join(self.data_path, "PCA_variance.npy"))
-        #     pca_.explained_variance_ratio_ = np.load(os.path.join(self.data_path, "PCA_variance_ratio.npy"))
-
-        #     genes_from_Aspace_scale = pca_.inverse_transform(np.concatenate((self.emb_A, x_BtoA.detach().cpu().numpy()), axis=0))
-        #     genes_from_Bspace_scale = pca_.inverse_transform(np.concatenate((x_AtoB.detach().cpu().numpy(), self.emb_B), axis=0))
-
-        #     mean_A = np.load(os.path.join(self.data_path, "mean_A.npy")).reshape(1, -1)
-        #     std_A = np.load(os.path.join(self.data_path, "std_A.npy")).reshape(1, -1)
-        #     mean_B = np.load(os.path.join(self.data_path, "mean_B.npy")).reshape(1, -1)
-        #     std_B = np.load(os.path.join(self.data_path, "std_B.npy")).reshape(1, -1)
-
-        #     np.save(os.path.join(self.result_path, "genes_from_Aspace_scale.npy"), genes_from_Aspace_scale)
-        #     np.save(os.path.join(self.result_path, "genes_from_Bspace_scale.npy"), genes_from_Bspace_scale)
-        #     np.save(os.path.join(self.result_path, "genes_from_Aspace.npy"), genes_from_Aspace_scale * std_A + mean_A)
-        #     np.save(os.path.join(self.result_path, "genes_from_Bspace.npy"), genes_from_Bspace_scale * std_B + mean_B)
