@@ -36,7 +36,7 @@ The evaluating procedure `model.eval()` saves the integrated latent representati
 * `batch_size`: Batch size for training. *Default*: `500`
 * `seed`: Random seed. *Default*: `1234`
 
-The default setting of the parameter `lambdacos` works in general. We also enable tuning of this parameter to achieve a better performance, see [**Tuning `lambdacos` (optional)**](#tuning-lambdacos-(optional)). For the integration task where the cosine similarity is not a reliable cross-domain correspondance (such as cross-species integration), we recommend to use a lower value such as `lambdacos=10.0`.
+The default setting of the parameter `lambdacos` works in general. We also enable tuning of this parameter to achieve a better performance, see [**Tuning `lambdacos` (optional)**](#tuning-lambdacos-optional). For the integration task where the cosine similarity is not a reliable cross-domain correspondance (such as cross-species integration), we recommend to use a lower value such as `lambdacos=10.0`.
 
 ### Memory-efficient Version
 To deal with large single-cell datasets, we also developed a memory-efficient version by reading mini-batches from the disk:
