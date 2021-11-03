@@ -56,6 +56,7 @@ integrated_data = portal.utils.integrate_datasets(lowdim_list)
 ### Tuning `lambdacos` (optional)
 An optional choice is to tune the parameter `lambdacos` in the range [15.0, 50.0]. Users can run the following command to search for an optimal parameter that yields the best integration result in terms of the mixing metric:
 ```python
+lowdim_list = portal.utils.preprocess_datasets(adata_list)
 integrated_data = portal.utils.integrate_datasets(lowdim_list, search_cos=True)
 ```
 
