@@ -38,7 +38,7 @@ model.eval_memory_efficient()
 ```
 
 ### Demos
-We provide demos for users to get a quick start: ([Demo 1](https://jiazhao97.github.io/Portal_demo1/).
+We provide demos for users to get a quick start: [Demo 1](https://jiazhao97.github.io/Portal_demo1/).
 
 ## Development
 This package is developed by Jia Zhao (jzhaoaz@connect.ust.hk) and Gefei Wang (gwangas@connect.ust.hk). 
