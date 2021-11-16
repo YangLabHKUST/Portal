@@ -331,7 +331,7 @@ class Model(object):
             loss_G.backward()
             optimizer_G.step()
 
-            if not step % 50:
+            if not step % 200:
                 print("step %d, loss_D=%f, loss_GAN=%f, loss_AE=%f, loss_cos=%f, loss_LA=%f"
                  % (step, loss_D, loss_G_GAN, self.lambdaAE*loss_AE, self.lambdacos*loss_cos, self.lambdaLA*loss_LA))
 
@@ -432,7 +432,7 @@ class Model(object):
             loss_G.backward()
             optimizer_G.step()
 
-            if not step % 50:
+            if not step % 200:
                 print("step %d, loss_D=%f, loss_GAN=%f, loss_AE=%f, loss_cos=%f, loss_LA=%f"
                  % (step, loss_D, loss_G_GAN, self.lambdaAE*loss_AE, self.lambdacos*loss_cos, self.lambdaLA*loss_LA))
 

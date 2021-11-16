@@ -113,7 +113,7 @@ def integrate_datasets(lowdim_list, # list of low-dimensional representations
         else:
             raise ValueError("Space should be either 'reference' or 'latent'.")
     else:
-        for i in range(len(indices) - 1):
+        for i in range(len(lowdim_list) - 1):
             print("Integrating the %d-th dataset to the 1-st dataset..." % (i + 2))
             for lambda_cos in [15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0]:
                 model = Model(lambdacos=lambda_cos,
@@ -132,7 +132,7 @@ def integrate_datasets(lowdim_list, # list of low-dimensional representations
                 meta["method"] = ["A"] * model.emb_A.shape[0] + ["B"] * model.emb_B.shape[0]
                 mixing = calculate_mixing_metric(model.latent, meta, k=5, max_k=300, methods=list(set(meta.method)))
                 print("lambda_cos: %f, mixing metric: %f \n" % (lambda_cos, mixing))
-                if lambda_cos == 10.0:
+                if lambda_cos == 15.0:
                     model_opt = model
                     mixing_metric_opt = mixing
                 elif mixing < mixing_metric_opt:
