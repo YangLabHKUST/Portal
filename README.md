@@ -6,7 +6,7 @@ To run Portal, please follow the installation instruction:
 ```bash
 git clone https://github.com/YangLabHKUST/Portal.git
 cd Portal
-conda env create -f environment.yml
+conda env update --f environment.yml
 conda activate portal
 ```
 
