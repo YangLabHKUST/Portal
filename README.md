@@ -30,7 +30,8 @@ The evaluating procedure `model.eval()` saves the integrated latent representati
 
 #### Parameters in `portal.model.Model()`:
 * `lambdacos`: Coefficient of the regularizer for preserving cosine similarity across domains. *Default*: `20.0`
-* `training_steps`: Number of steps for training. *Default*: `2000` For dataset with sample size < 50,000, we recommend to use 1000 training steps.
+* `training_steps`: Number of steps for training. *Default*: `2000` 
+*  For dataset with sample size < 50,000, we recommend to use 1000 training steps.
 * `npcs`: Dimensionality of the embeddings in each domain (number of PCs). *Default*: `30`
 * `n_latent`: Dimensionality of the shared latent space. *Default*: `20`
 * `batch_size`: Batch size for training. *Default*: `500`
