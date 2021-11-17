@@ -29,13 +29,12 @@ model.eval() # get integrated latent representation of cells
 The evaluating procedure `model.eval()` saves the integrated latent representation of cells in `model.latent`, which can be used for downstream integrative analysis.
 
 #### Parameters in `portal.model.Model()`:
-* `lambdacos`: Coefficient of the regularizer for preserving cosine similarity across domains. *Default*: `20.0`
-* `training_steps`: Number of steps for training. *Default*: `2000` 
-*  For dataset with sample size < 50,000, we recommend to use 1000 training steps.
-* `npcs`: Dimensionality of the embeddings in each domain (number of PCs). *Default*: `30`
-* `n_latent`: Dimensionality of the shared latent space. *Default*: `20`
-* `batch_size`: Batch size for training. *Default*: `500`
-* `seed`: Random seed. *Default*: `1234`
+* `lambdacos`: Coefficient of the regularizer for preserving cosine similarity across domains. *Default*: `20.0`.
+* `training_steps`: Number of steps for training. *Default*: `2000`. Use `training_steps=1000` for datasets with sample size < 20,000.
+* `npcs`: Dimensionality of the embeddings in each domain (number of PCs). *Default*: `30`.
+* `n_latent`: Dimensionality of the shared latent space. *Default*: `20`.
+* `batch_size`: Batch size for training. *Default*: `500`.
+* `seed`: Random seed. *Default*: `1234`.
 
 The default setting of the parameter `lambdacos` works in general. We also enable tuning of this parameter to achieve a better performance, see [**Tuning `lambdacos` (optional)**](#tuning-lambdacos-optional). For the integration task where the cosine similarity is not a reliable cross-domain correspondance (such as cross-species integration), we recommend to use a lower value such as `lambdacos=10.0`.
 
