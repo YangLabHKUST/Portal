@@ -67,3 +67,4 @@ We provide demos for users to get a quick start: [Demo 1](https://jiazhao97.gith
 This package is developed by Jia Zhao (jzhaoaz@connect.ust.hk) and Gefei Wang (gwangas@connect.ust.hk). 
 
 ## Citation
+Jia Zhao, Gefei Wang, Jingsi Ming, Zhixiang Lin, Yang Wang, Tabula Microcebus Consortium, Angela Ruohao Wu, Can Yang. Adversarial domain translation networks enable fast and accurate large-scale atlas-level single-cell data integration.
