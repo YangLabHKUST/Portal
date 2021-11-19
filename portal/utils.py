@@ -149,9 +149,9 @@ def integrate_datasets(lowdim_list, # list of low-dimensional representations
 
 def calculate_mixing_metric(data, meta, methods, k=5, max_k=300, subsample=True):
     if subsample:
-        if data.shape[0] >= 1e5:
+        if data.shape[0] >= 1e4:
             np.random.seed(1234)
-            subsample_idx = np.random.choice(data.shape[0], 50000, replace=False)
+            subsample_idx = np.random.choice(data.shape[0], 10000, replace=False)
             data = data[subsample_idx]
             meta = meta.iloc[subsample_idx]
             meta.index = np.arange(len(subsample_idx))
