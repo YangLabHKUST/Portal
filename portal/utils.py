@@ -154,6 +154,7 @@ def calculate_mixing_metric(data, meta, methods, k=5, max_k=300, subsample=True)
             subsample_idx = np.random.choice(data.shape[0], 50000, replace=False)
             data = data[subsample_idx]
             meta = meta.iloc[subsample_idx]
+            meta.index = np.arange(len(subsample_idx))
     lowdim = data
 
     nbrs = NearestNeighbors(n_neighbors=max_k, algorithm='kd_tree').fit(lowdim)
