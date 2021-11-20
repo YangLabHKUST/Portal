@@ -1,4 +1,4 @@
-# Portal
+# Adversarial domain translation networks enable fast and accurate large-scale atlas-level single-cell data integration (Portal)
 A fast, accurate and scalable method for single-cell data integration.
 
 ## Installation
