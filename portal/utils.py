@@ -92,9 +92,16 @@ def integrate_datasets(lowdim_list, # list of low-dimensional representations
 
     if not search_cos:
         # if not search hyperparameter lambdacos
+        if isinstance(lambda_cos, float) or isinstance(lambda_cos, int):
+            lambda_cos_tmp = lambda_cos
+
         for i in range(len(lowdim_list) - 1):
+
+            if isinstance(lambda_cos, list):
+                lambda_cos_tmp = lambda_cos[i]
+
             print("Integrating the %d-th dataset to the 1-st dataset..." % (i + 2))
-            model = Model(lambdacos=lambda_cos,
+            model = Model(lambdacos=lambda_cos_tmp,
                           training_steps=training_steps, 
                           data_path=os.path.join(data_path, "preprocess"), 
                           model_path="models/%d_datasets" % (i + 2), 
