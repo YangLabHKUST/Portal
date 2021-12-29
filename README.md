@@ -1,7 +1,17 @@
 # Portal
 An efficient, accurate and flexible method for single-cell data integration.
 
-preprint: [Adversarial domain translation networks enable fast and accurate large-scale atlas-level single-cell data integration](https://www.biorxiv.org/content/10.1101/2021.11.16.468892v1).
+Preprint: [Adversarial domain translation networks enable fast and accurate large-scale atlas-level single-cell data integration](https://www.biorxiv.org/content/10.1101/2021.11.16.468892v1).
+
+## Reproducibility
+We provide [source codes](https://github.com/jiazhao97/Portal-reproducibility) for reproducing the experiments of the paper "Adversarial domain translation networks enable fast and accurate large-scale atlas-level single-cell data integration".
+
++ [Integration of mouse spleen datasets](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-Spleen.html).
++ [Integration of mouse brain hippocampus datasets](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-MouseBrain-HC.html).
++ [Integration of entire mouse cell atlases from the Tablula Muris project](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-TabulaMuris-full.html).
++ [Integration of scRNA-seq and snRNA-seq datasets](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-TabulaMuris-full.html).
++ [Integration of scRNA-seq and scATAC-seq datasets](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-PBMC-ATACseq.html).
++ [Integration of spermatogenesis differentiation process across multiple species](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-Sperm.html).
 
 ## Installation
 To run Portal, please follow the installation instruction:
