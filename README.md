@@ -11,6 +11,7 @@ cd Portal
 conda env update --f environment.yml
 conda activate portal
 ```
+Normally the installation time is less than 5 minutes.
 
 ## Quick Start
 ### Basic Usage
