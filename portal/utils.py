@@ -78,7 +78,8 @@ def integrate_datasets(lowdim_list, # list of low-dimensional representations
                        lambda_cos=20.0,
                        training_steps=2000,
                        space=None, # None or "reference" or "latent"
-                       data_path="data"
+                       data_path="data",
+                       mixingmetric_subsample=True
                        ):
 
     if space == None:
@@ -130,7 +131,7 @@ def integrate_datasets(lowdim_list, # list of low-dimensional representations
                 model.eval()
                 meta = pd.DataFrame(index=np.arange(model.emb_A.shape[0] + model.emb_B.shape[0]))
                 meta["method"] = ["A"] * model.emb_A.shape[0] + ["B"] * model.emb_B.shape[0]
-                mixing = calculate_mixing_metric(model.latent, meta, k=5, max_k=300, methods=list(set(meta.method)))
+                mixing = calculate_mixing_metric(model.latent, meta, k=5, max_k=300, methods=list(set(meta.method)), subsample=mixingmetric_subsample)
                 print("lambda_cos: %f, mixing metric: %f \n" % (lambda_cos, mixing))
                 if lambda_cos == 15.0:
                     model_opt = model
