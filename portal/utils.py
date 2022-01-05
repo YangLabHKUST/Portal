@@ -9,6 +9,7 @@ import rpy2.robjects as ro
 import rpy2.robjects.numpy2ri
 import anndata2ri
 from sklearn.neighbors import NearestNeighbors
+from scipy.spatial.distance import cdist
 
 def preprocess_datasets(adata_list, # list of anndata to be integrated
                         hvg_num=4000, # number of highly variable genes for each anndata
@@ -342,6 +343,11 @@ def calculate_ASW(data, meta, anno_A="drop_subcluster", anno_B="subcluster"):
 
         return ASW_A
 
+def annotate_by_nn(vec_tar, vec_ref, label_ref, k=20):
+    dist_mtx = cdist(vec_tar, vec_ref, metric='cosine')
+    idx = dist_mtx.argsort()[:, :k]
+    labels = [max(list(label_ref[i]), key=list(label_ref[i]).count) for i in idx]
+    return labels
 
 def plot_UMAP(data, meta, space="latent", score=None, colors=["method"], subsample=False,
               save=False, result_path=None, filename_suffix=None):
