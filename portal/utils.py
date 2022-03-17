@@ -8,6 +8,11 @@ from portal.model import *
 import rpy2.robjects as ro
 import rpy2.robjects.numpy2ri
 import anndata2ri
+from sklearn.metrics import normalized_mutual_info_score as NMI
+from sklearn.metrics import f1_score
+from sklearn.metrics.cluster import silhouette_score
+from sklearn.linear_model import LinearRegression
+from scipy.sparse.csgraph import connected_components
 from sklearn.neighbors import NearestNeighbors
 from scipy.spatial.distance import cdist
 
@@ -342,7 +347,366 @@ def calculate_ASW(data, meta, anno_A="drop_subcluster", anno_B="subcluster"):
         ASW_A = np.array(ro.r("ASW_A"))[0]
 
         return ASW_A
+      
+      
+def calculate_cellcycleconservation(data, meta, adata_raw, organism="mouse"):
+    #adata
+    cellid = list(meta.index.astype(str))
+    geneid = ["gene_"+str(i) for i in range(data.shape[1])]
+    adata = anndata.AnnData(X=data, obs=cellid, var=geneid)
 
+    #score cell cycle
+    cc_files = {'mouse': ['cell_cycle_resources/s_genes_tirosh.txt',
+                          'cell_cycle_resources/g2m_genes_tirosh.txt']}
+    with open(cc_files[organism][0], "r") as f:
+        s_genes = [x.strip() for x in f.readlines() if x.strip() in adata_raw.var.index]
+    with open(cc_files[organism][1], "r") as f:
+        g2m_genes = [x.strip() for x in f.readlines() if x.strip() in adata_raw.var.index]
+    sc.tl.score_genes_cell_cycle(adata_raw, s_genes, g2m_genes)
+
+    adata_raw.obs["method"] = meta["method"].values.astype(str)
+    adata.obs["method"] = meta["method"].values.astype(str)
+    batches = adata_raw.obs["method"].unique()
+    
+    scores_final = []
+    scores_before = []
+    scores_after = []
+    for batch in batches:
+        raw_sub = adata_raw[adata_raw.obs["method"] == batch]
+        int_sub = adata[adata.obs["method"] == batch].copy()
+        int_sub = int_sub.X
+
+        #regression variable
+        covariate_values = raw_sub.obs[['S_score', 'G2M_score']]
+        if pd.api.types.is_numeric_dtype(covariate_values):
+            covariate_values = np.array(covariate_values).reshape(-1, 1)
+        else:
+            covariate_values = pd.get_dummies(covariate_values)
+
+        #PCR on data before integration
+        n_comps = 50
+        svd_solver = 'arpack'
+        pca = sc.tl.pca(raw_sub.X, n_comps=n_comps, use_highly_variable=False, return_info=True, svd_solver=svd_solver, copy=True)
+        X_pca = pca[0].copy()
+        pca_var = pca[3].copy()
+        del pca
+
+        r2 = []
+        for i in range(n_comps):
+            pc = X_pca[:, [i]]
+            lm = LinearRegression()
+            lm.fit(covariate_values, pc)
+            r2_score = np.maximum(0, lm.score(covariate_values, pc))
+            r2.append(r2_score)
+
+        Var = pca_var / sum(pca_var) * 100
+        before = sum(r2 * Var) / 100
+
+        #PCR on data after integration
+        n_comps = min(data.shape)
+        svd_solver = 'full'
+        pca = sc.tl.pca(int_sub, n_comps=n_comps, use_highly_variable=False, return_info=True, svd_solver=svd_solver, copy=True)
+        X_pca = pca[0].copy()
+        pca_var = pca[3].copy()
+        del pca
+
+        r2 = []
+        for i in range(n_comps):
+            pc = X_pca[:, [i]]
+            lm = LinearRegression()
+            lm.fit(covariate_values, pc)
+            r2_score = np.maximum(0, lm.score(covariate_values, pc))
+            r2.append(r2_score)
+
+        Var = pca_var / sum(pca_var) * 100
+        after = sum(r2 * Var) / 100
+
+        #scale result
+        score = 1 - abs(before - after) / before
+        if score < 0:
+            score = 0
+        scores_before.append(before)
+        scores_after.append(after)
+        scores_final.append(score)
+
+    score_out = np.mean(scores_final) 
+    return score_out
+
+
+def calculate_isolatedASW(data, meta, anno):
+    tmp = meta[[anno, "method"]].drop_duplicates()
+    batch_per_lab = tmp.groupby(anno).agg({"method": "count"})
+    iso_threshold = batch_per_lab.min().tolist()[0]
+    labels = batch_per_lab[batch_per_lab["method"] <= iso_threshold].index.tolist()
+
+    scores = {}
+    for label_tar in labels:
+        iso_label = np.array(meta[anno] == label_tar).astype(int)
+        asw = silhouette_score(
+            X=data,
+            labels=iso_label,
+            metric='euclidean'
+        )
+        asw = (asw + 1) / 2
+        scores[label_tar] = asw
+
+    scores = pd.Series(scores)
+    score = scores.mean()
+    return score
+
+
+def calculate_isolatedF1(data, meta, anno):
+    if data.shape[0] > 1e5:
+        np.random.seed(1234)
+        subsample_idx = np.random.choice(data.shape[0], 50000, replace=False)
+        data = data[subsample_idx]
+        meta = meta.iloc[subsample_idx]
+    lowdim = data
+
+    tmp = meta[[anno, "method"]].drop_duplicates()
+    batch_per_lab = tmp.groupby(anno).agg({"method": "count"})
+    iso_threshold = batch_per_lab.min().tolist()[0]
+    labels = batch_per_lab[batch_per_lab["method"] <= iso_threshold].index.tolist()
+
+    cellid = meta.index.astype(str)
+    method = meta["method"].astype(str)
+    cluster_A = meta[anno].astype(str)
+
+    rpy2.robjects.numpy2ri.activate()
+    nr, nc = lowdim.shape
+    lowdim = ro.r.matrix(lowdim, nrow=nr, ncol=nc)
+    ro.r.assign("data", lowdim)
+    rpy2.robjects.numpy2ri.deactivate()
+
+    cellid = ro.StrVector(cellid)
+    ro.r.assign("cellid", cellid)
+    method = ro.StrVector(method)
+    ro.r.assign("method", method)
+    cluster_A = ro.StrVector(cluster_A)
+    ro.r.assign("cluster_A", cluster_A)
+
+    ro.r("set.seed(1234)")
+    ro.r['library']("Seurat")
+
+    ro.r("comb_normalized <- t(data)")
+    ro.r('''rownames(comb_normalized) <- paste("gene", 1:nrow(comb_normalized), sep = "")''')
+    ro.r("colnames(comb_normalized) <- as.vector(cellid)")
+
+    ro.r("comb_raw <- matrix(0, nrow = nrow(comb_normalized), ncol = ncol(comb_normalized))")
+    ro.r("rownames(comb_raw) <- rownames(comb_normalized)")
+    ro.r("colnames(comb_raw) <- colnames(comb_normalized)")
+
+    ro.r("comb <- CreateSeuratObject(comb_raw)")
+    ro.r('''scunitdata <- Seurat::CreateDimReducObject(
+                embeddings = t(comb_normalized),
+                stdev = as.numeric(apply(comb_normalized, 2, stats::sd)),
+                assay = "RNA",
+                key = "scunit")''')
+    ro.r('''comb[["scunit"]] <- scunitdata''')
+
+    ro.r('''comb <- FindNeighbors(comb, reduction = "scunit", dims = 1:ncol(data), force.recalc = TRUE, verbose = FALSE)''')
+    ro.r('''comb <- FindClusters(comb, verbose = FALSE)''')
+
+    louvain_clusters = np.array(ro.r("comb$seurat_clusters")).astype("str")
+    louvain_list = list(set(louvain_clusters))
+
+    scores = {}
+    for label_tar in labels:
+        max_f1 = 0
+        for cluster in louvain_list:
+            y_pred = louvain_clusters == cluster
+            y_true = meta[anno].values.astype(str) == label_tar
+            f1 = f1_score(y_pred, y_true)
+            if f1 > max_f1:
+                max_f1 = f1
+        scores[label_tar] = max_f1
+
+    scores = pd.Series(scores)
+    score = scores.mean()
+    return score
+
+
+def calculate_graphconnectivity(data, meta, anno):
+    cellid = list(meta.index.astype(str))
+    geneid = ["gene_"+str(i) for i in range(data.shape[1])]
+    adata = anndata.AnnData(X=data, obs=cellid, var=geneid)
+
+    adata.obsm["X_emb"] = data
+    sc.pp.neighbors(adata, n_neighbors=15, use_rep="X_emb")
+
+    adata.obs["anno"] = meta[anno].values.astype(str)
+    anno_list = list(set(adata.obs["anno"]))
+
+    clust_res = []
+
+    for label in anno_list:
+        adata_sub = adata[adata.obs["anno"].isin([label])]
+        _, labels = connected_components(
+            adata_sub.obsp['connectivities'],
+            connection='strong'
+        )
+        tab = pd.value_counts(labels)
+        clust_res.append(tab.max() / sum(tab))
+
+    score = np.mean(clust_res)
+    return score
+
+
+def calculate_PCRbatch(data, meta, data_before=None):
+    covariate_values = meta["method"]
+
+    n_comps = min(data.shape)
+    svd_solver = 'full'
+    pca = sc.tl.pca(data, n_comps=n_comps, use_highly_variable=False, return_info=True, svd_solver=svd_solver, copy=True)
+    X_pca = pca[0].copy()
+    pca_var = pca[3].copy()
+    del pca
+
+    if pd.api.types.is_numeric_dtype(covariate_values):
+        covariate_values = np.array(covariate_values).reshape(-1, 1)
+    else:
+        covariate_values = pd.get_dummies(covariate_values)
+
+    r2 = []
+    for i in range(n_comps):
+        pc = X_pca[:, [i]]
+        lm = LinearRegression()
+        lm.fit(covariate_values, pc)
+        r2_score = np.maximum(0, lm.score(covariate_values, pc))
+        r2.append(r2_score)
+
+    Var = pca_var / sum(pca_var) * 100
+    R2Var = sum(r2 * Var) / 100
+
+    if data_before is not None:
+        n_comps = 50
+        svd_solver = 'arpack'
+        pca = sc.tl.pca(data_before, n_comps=n_comps, use_highly_variable=False, return_info=True, svd_solver=svd_solver, copy=True)
+        X_pca = pca[0].copy()
+        pca_var = pca[3].copy()
+        del pca
+
+        r2 = []
+        for i in range(n_comps):
+            pc = X_pca[:, [i]]
+            lm = LinearRegression()
+            lm.fit(covariate_values, pc)
+            r2_score = np.maximum(0, lm.score(covariate_values, pc))
+            r2.append(r2_score)
+
+        Var = pca_var / sum(pca_var) * 100
+        R2Var_before = sum(r2 * Var) / 100
+
+        score = (R2Var_before - R2Var) / R2Var_before
+        return score, R2Var, R2Var_before
+    else:
+        return R2Var
+      
+
+def calculate_NMI(data, meta, anno_A="drop_subcluster", anno_B="subcluster"):
+    # np.random.seed(1234)
+    if data.shape[0] > 1e5:
+        np.random.seed(1234)
+        subsample_idx = np.random.choice(data.shape[0], 50000, replace=False)
+        data = data[subsample_idx]
+        meta = meta.iloc[subsample_idx]
+    lowdim = data
+
+    cellid = meta.index.astype(str)
+    method = meta["method"].astype(str)
+    cluster_A = meta[anno_A].astype(str)
+    if (anno_B != anno_A):
+        cluster_B = meta[anno_B].astype(str)
+
+    rpy2.robjects.numpy2ri.activate()
+    nr, nc = lowdim.shape
+    lowdim = ro.r.matrix(lowdim, nrow=nr, ncol=nc)
+    ro.r.assign("data", lowdim)
+    rpy2.robjects.numpy2ri.deactivate()
+
+    cellid = ro.StrVector(cellid)
+    ro.r.assign("cellid", cellid)
+    method = ro.StrVector(method)
+    ro.r.assign("method", method)
+    cluster_A = ro.StrVector(cluster_A)
+    ro.r.assign("cluster_A", cluster_A)
+    if (anno_B != anno_A):
+        cluster_B = ro.StrVector(cluster_B)
+        ro.r.assign("cluster_B", cluster_B)
+
+    ro.r("set.seed(1234)")
+    ro.r['library']("Seurat")
+
+    ro.r("comb_normalized <- t(data)")
+    ro.r('''rownames(comb_normalized) <- paste("gene", 1:nrow(comb_normalized), sep = "")''')
+    ro.r("colnames(comb_normalized) <- as.vector(cellid)")
+
+    ro.r("comb_raw <- matrix(0, nrow = nrow(comb_normalized), ncol = ncol(comb_normalized))")
+    ro.r("rownames(comb_raw) <- rownames(comb_normalized)")
+    ro.r("colnames(comb_raw) <- colnames(comb_normalized)")
+
+    ro.r("comb <- CreateSeuratObject(comb_raw)")
+    ro.r('''scunitdata <- Seurat::CreateDimReducObject(
+                embeddings = t(comb_normalized),
+                stdev = as.numeric(apply(comb_normalized, 2, stats::sd)),
+                assay = "RNA",
+                key = "scunit")''')
+    ro.r('''comb[["scunit"]] <- scunitdata''')
+
+    ro.r("comb@meta.data$method <- method")
+    ro.r("comb@meta.data$cluster_A <- cluster_A")
+    if (anno_B != anno_A):
+        ro.r("comb@meta.data$cluster_B <- cluster_B")
+
+    ro.r('''comb <- FindNeighbors(comb, reduction = "scunit", dims = 1:ncol(data), force.recalc = TRUE, verbose = FALSE)''')
+    ro.r('''comb <- FindClusters(comb, verbose = FALSE)''')
+
+    np.random.seed(1234)
+    if (anno_B != anno_A):
+        method_set = pd.unique(meta["method"])
+        method_A = method_set[0]
+        ro.r.assign("method_A", method_A)
+        method_B = method_set[1]
+        ro.r.assign("method_B", method_B)
+        ro.r('''indx_A <- which(comb$method == method_A)''')
+        ro.r('''indx_B <- which(comb$method == method_B)''')
+
+        #A
+        louvain_A = np.array(ro.r("comb$seurat_clusters[indx_A]")).astype("str")
+        cluster_A = np.array(ro.r("comb$cluster_A[indx_A]")).astype("str")
+        df_A = pd.DataFrame({'louvain_A': louvain_A, 'cluster_A': cluster_A})
+        df_A.louvain_A = pd.Categorical(df_A.louvain_A)
+        df_A.cluster_A = pd.Categorical(df_A.cluster_A)
+        df_A['louvain_code'] = df_A.louvain_A.cat.codes
+        df_A['A_code'] = df_A.cluster_A.cat.codes
+        NMI_A = NMI(df_A['A_code'].values, df_A['louvain_code'].values)
+
+        #B
+        louvain_B = np.array(ro.r("comb$seurat_clusters[indx_B]")).astype("str")
+        cluster_B = np.array(ro.r("comb$cluster_B[indx_B]")).astype("str")
+        df_B = pd.DataFrame({'louvain_B': louvain_B, 'cluster_B': cluster_B})
+        df_B.louvain_B = pd.Categorical(df_B.louvain_B)
+        df_B.cluster_B = pd.Categorical(df_B.cluster_B)
+        df_B['louvain_code'] = df_B.louvain_B.cat.codes
+        df_B['B_code'] = df_B.cluster_B.cat.codes
+        NMI_B = NMI(df_B['B_code'].values, df_B['louvain_code'].values)
+
+        return NMI_A, NMI_B
+    else:
+        louvain_clusters = np.array(ro.r("comb$seurat_clusters")).astype("str")
+        cluster_A = np.array(ro.r("comb$cluster_A")).astype("str")
+
+        df_fornmi = pd.DataFrame({'louvain_clusters': louvain_clusters, 
+                                  'cluster_A': cluster_A})
+        df_fornmi.louvain_clusters = pd.Categorical(df_fornmi.louvain_clusters)
+        df_fornmi.cluster_A = pd.Categorical(df_fornmi.cluster_A)
+        df_fornmi['louvain_code'] = df_fornmi.louvain_clusters.cat.codes
+        df_fornmi['A_code'] = df_fornmi.cluster_A.cat.codes
+
+        NMI_A = NMI(df_fornmi['A_code'].values, df_fornmi['louvain_code'].values)
+        return NMI_A
+
+     
 def annotate_by_nn(vec_tar, vec_ref, label_ref, k=20):
     dist_mtx = cdist(vec_tar, vec_ref, metric='cosine')
     idx = dist_mtx.argsort()[:, :k]
