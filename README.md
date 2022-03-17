@@ -11,7 +11,7 @@ We provide [source codes](https://github.com/jiazhao97/Portal-reproducibility) f
 + [Integration of entire mouse cell atlases from the Tablula Muris project](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-TabulaMuris-full.html).
 + [Integration of scRNA-seq and snRNA-seq datasets](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-MouseBrain-CellNuclei.html).
 + [Integration of scRNA-seq and scATAC-seq datasets](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-PBMC-ATACseq.html).
-+ [Integration of spermatogenesis differentiation process across multiple species](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-Sperm.html). Genelists: [orthologues (human vs mouse)](https://github.com/jiazhao97/Portal-reproducibility/blob/main/orthologues_human_mouse.txt), [orthologues (human vs macaque)](https://github.com/jiazhao97/Portal-reproducibility/blob/main/orthologues_human_macaque.txt).
++ [Integration of spermatogenesis differentiation process across multiple species](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-Sperm.html). Gene lists: [orthologues (human vs mouse)](https://github.com/jiazhao97/Portal-reproducibility/blob/main/orthologues_human_mouse.txt), [orthologues (human vs macaque)](https://github.com/jiazhao97/Portal-reproducibility/blob/main/orthologues_human_macaque.txt).
 
 ## Installation
 To run Portal, please follow the installation instruction:
