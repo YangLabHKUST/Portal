@@ -349,15 +349,15 @@ def calculate_ASW(data, meta, anno_A="drop_subcluster", anno_B="subcluster"):
         return ASW_A
       
       
-def calculate_cellcycleconservation(data, meta, adata_raw, organism="mouse"):
+def calculate_cellcycleconservation(data, meta, adata_raw, organism="mouse", resources_path="./cell_cycle_resources"):
     #adata
     cellid = list(meta.index.astype(str))
     geneid = ["gene_"+str(i) for i in range(data.shape[1])]
     adata = anndata.AnnData(X=data, obs=cellid, var=geneid)
 
     #score cell cycle
-    cc_files = {'mouse': ['cell_cycle_resources/s_genes_tirosh.txt',
-                          'cell_cycle_resources/g2m_genes_tirosh.txt']}
+    cc_files = {'mouse': [os.path.join(resources_path, 's_genes_tirosh.txt'),
+                          os.path.join(resources_path, 'g2m_genes_tirosh.txt')]}
     with open(cc_files[organism][0], "r") as f:
         s_genes = [x.strip() for x in f.readlines() if x.strip() in adata_raw.var.index]
     with open(cc_files[organism][1], "r") as f:
