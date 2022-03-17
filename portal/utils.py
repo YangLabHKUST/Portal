@@ -707,7 +707,7 @@ def calculate_NMI(data, meta, anno_A="drop_subcluster", anno_B="subcluster"):
         return NMI_A
 
      
-def annotate_by_nn(vec_tar, vec_ref, label_ref, k=20, metric='cosine):
+def annotate_by_nn(vec_tar, vec_ref, label_ref, k=20, metric='cosine'):
     dist_mtx = cdist(vec_tar, vec_ref, metric=metric)
     idx = dist_mtx.argsort()[:, :k]
     labels = [max(list(label_ref[i]), key=list(label_ref[i]).count) for i in idx]
