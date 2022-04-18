@@ -6,7 +6,7 @@ An efficient, accurate and flexible method for single-cell data integration.
 Preprint: [Adversarial domain translation networks for fast and accurate integration of large-scale atlas-level single-cell datasets](https://www.biorxiv.org/content/10.1101/2021.11.16.468892v2).
 
 ## Reproducibility
-We provide [source codes](https://github.com/jiazhao97/Portal-reproducibility) for reproducing the experiments of the paper "Adversarial domain translation networks enable fast and accurate large-scale atlas-level single-cell data integration".
+We provide [source codes](https://github.com/jiazhao97/Portal-reproducibility) for reproducing the experiments of the paper "Adversarial domain translation networks for fast and accurate integration of large-scale atlas-level single-cell datasets".
 
 + [Integration of mouse spleen datasets](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-Spleen.html) (we reproduce the result of performance metrics in this notebook as an example). [Benchmarking](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Benchmarking-Spleen.html).  
 + [Integration of mouse marrow datasets](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-Marrow.html).
