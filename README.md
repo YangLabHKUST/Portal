@@ -1,4 +1,6 @@
 # Portal
+[![DOI](https://zenodo.org/badge/423325112.svg)](https://zenodo.org/badge/latestdoi/423325112)
+
 An efficient, accurate and flexible method for single-cell data integration.
 
 Preprint: [Adversarial domain translation networks for fast and accurate integration of large-scale atlas-level single-cell datasets](https://www.biorxiv.org/content/10.1101/2021.11.16.468892v2).
