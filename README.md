@@ -91,7 +91,7 @@ expression_scaled, expression_log_normalized = portal.utils.integrate_recover_ex
 ```
 
 ### Demos
-We provide demos for users to get a quick start: [Demo 1](https://jiazhao97.github.io/Portal_demo1/).
+We provide demos for users to get a quick start: [Demo 1](https://jiazhao97.github.io/Portal_demo1/), [Demo 2](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Portal_recover_expression.html).
 
 ## Development
 This package is developed by Jia Zhao (jzhaoaz@connect.ust.hk) and Gefei Wang (gwangas@connect.ust.hk). 
