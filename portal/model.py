@@ -454,7 +454,7 @@ class Model(object):
         torch.save(state, os.path.join(self.model_path, "ckpt.pth"))
 
 
-    def eval(self, D_score=False, save_results=False, save_DE=False):
+    def eval(self, D_score=False, save_results=False):
         begin_time = time.time()
         print("Begining time: ", time.asctime(time.localtime(begin_time)))
 
@@ -513,27 +513,6 @@ class Model(object):
                 np.save(os.path.join(self.result_path, "score_Bspace_A.npy"), score_D_B_A.detach().cpu().numpy())
                 np.save(os.path.join(self.result_path, "score_Bspace_B.npy"), score_D_B_B.detach().cpu().numpy())
                 np.save(os.path.join(self.result_path, "score_Aspace_B.npy"), score_D_A_B.detach().cpu().numpy())
-
-        if save_DE:
-            pca_ = PCA(n_components=self.npcs, svd_solver="arpack", random_state=0)
-
-            pca_.mean_ = np.load(os.path.join(self.data_path, "PCA_mean.npy"))
-            pca_.components_ = np.load(os.path.join(self.data_path, "PCA_components.npy"))
-            pca_.explained_variance_ = np.load(os.path.join(self.data_path, "PCA_variance.npy"))
-            pca_.explained_variance_ratio_ = np.load(os.path.join(self.data_path, "PCA_variance_ratio.npy"))
-
-            genes_from_Aspace_scale = pca_.inverse_transform(np.concatenate((self.emb_A, x_BtoA.detach().cpu().numpy()), axis=0))
-            genes_from_Bspace_scale = pca_.inverse_transform(np.concatenate((x_AtoB.detach().cpu().numpy(), self.emb_B), axis=0))
-
-            mean_A = np.load(os.path.join(self.data_path, "mean_A.npy")).reshape(1, -1)
-            std_A = np.load(os.path.join(self.data_path, "std_A.npy")).reshape(1, -1)
-            mean_B = np.load(os.path.join(self.data_path, "mean_B.npy")).reshape(1, -1)
-            std_B = np.load(os.path.join(self.data_path, "std_B.npy")).reshape(1, -1)
-
-            np.save(os.path.join(self.result_path, "genes_from_Aspace_scale.npy"), genes_from_Aspace_scale)
-            np.save(os.path.join(self.result_path, "genes_from_Bspace_scale.npy"), genes_from_Bspace_scale)
-            np.save(os.path.join(self.result_path, "genes_from_Aspace.npy"), genes_from_Aspace_scale * std_A + mean_A)
-            np.save(os.path.join(self.result_path, "genes_from_Bspace.npy"), genes_from_Bspace_scale * std_B + mean_B)
 
 
     def eval_memory_efficient(self):
