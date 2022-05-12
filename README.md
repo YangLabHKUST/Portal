@@ -75,11 +75,19 @@ Portal integrates multiple datasets incrementally. Given `adata_list = [adata_1,
 lowdim_list = portal.utils.preprocess_datasets(adata_list)
 integrated_data = portal.utils.integrate_datasets(lowdim_list)
 ```
+
 ### Tuning `lambdacos` (optional)
 An optional choice is to tune the parameter `lambdacos` in the range [15.0, 50.0]. Users can run the following command to search for an optimal parameter that yields the best integration result in terms of the mixing metric:
 ```python
 lowdim_list = portal.utils.preprocess_datasets(adata_list)
 integrated_data = portal.utils.integrate_datasets(lowdim_list, search_cos=True)
+```
+
+### Recovering expression matrices
+Portal can provide harmonized expression matrices (in scaled level or log-normalized level):
+```python
+lowdim_list, hvg, mean, std, pca = portal.utils.preprocess_recover_expression(adata_list)
+expression_scaled, expression_log_normalized = portal.utils.integrate_recover_expression(lowdim_list, mean, std, pca)
 ```
 
 ### Demos
