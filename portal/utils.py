@@ -79,6 +79,71 @@ def preprocess_datasets(adata_list, # list of anndata to be integrated
     return lowdim_list
 
 
+def preprocess_recover_expression(adata_list, # list of anndata to be integrated
+                                  hvg_num=4000, # number of highly variable genes for each anndata
+                                  save_embedding=False, # save low-dimensional embeddings or not
+                                  data_path="data"
+                                  ):
+
+    if len(adata_list) < 2:
+        raise ValueError("There should be at least two datasets for integration!")
+
+    sample_size_list = []
+
+    print("Finding highly variable genes...")
+    for i, adata in enumerate(adata_list):
+        sample_size_list.append(adata.shape[0])
+        # adata = adata_input.copy()
+        sc.pp.highly_variable_genes(adata, flavor='seurat_v3', n_top_genes=hvg_num)
+        hvg = adata.var[adata.var.highly_variable == True].sort_values(by="highly_variable_rank").index
+        if i == 0:
+            hvg_total = hvg
+        else:
+            hvg_total = hvg_total & hvg
+        if len(hvg_total) < 100:
+            raise ValueError("The total number of highly variable genes is smaller than 100 (%d). Try to set a larger hvg_num." % len(hvg_total))
+
+    print("Normalizing and scaling...")
+    for i, adata in enumerate(adata_list):
+        # adata = adata_input.copy()
+        sc.pp.normalize_total(adata, target_sum=1e4)
+        sc.pp.log1p(adata)
+        adata = adata[:, hvg_total]
+        sc.pp.scale(adata, max_value=10)
+        if i == 0:
+            adata_total = adata
+            mean = adata.var["mean"]
+            std = adata.var["std"]
+        else:
+            adata_total = adata_total.concatenate(adata, index_unique=None)
+
+    print("Dimensionality reduction via PCA...")
+    npcs = 30
+    pca = PCA(n_components=npcs, svd_solver="arpack", random_state=0)
+    adata_total.obsm["X_pca"] = pca.fit_transform(adata_total.X)
+
+    indices = np.cumsum(sample_size_list)
+
+    data_path = os.path.join(data_path, "preprocess")
+
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
+
+    if save_embedding:
+        for i in range(len(indices)):
+            if i == 0:
+                np.save(os.path.join(data_path, "lowdim_1.npy"), 
+                        adata_total.obsm["X_pca"][:indices[0], :npcs])
+            else:
+                np.save(os.path.join(data_path, "lowdim_%d.npy" % (i + 1)), 
+                        adata_total.obsm["X_pca"][indices[i-1]:indices[i], :npcs])
+
+    lowdim = adata_total.obsm["X_pca"].copy()
+    lowdim_list = [lowdim[:indices[0], :npcs] if i == 0 else lowdim[indices[i - 1]:indices[i], :npcs] for i in range(len(indices))]
+
+    return lowdim_list, hvg_total, mean.values.reshape(1, -1), std.values.reshape(1, -1), pca
+
+
 def integrate_datasets(lowdim_list, # list of low-dimensional representations
                        search_cos=False, # searching for an optimal lambdacos
                        lambda_cos=20.0,
@@ -159,6 +224,75 @@ def integrate_datasets(lowdim_list, # list of low-dimensional representations
             return model_opt.latent
         else:
             raise ValueError("Space should be either 'reference' or 'latent'.")
+
+
+def integrate_recover_expression(lowdim_list, # list of low-dimensional representations
+                                 mean, std, pca, # information for recovering expression
+                                 search_cos=False, # searching for an optimal lambdacos
+                                 lambda_cos=20.0,
+                                 training_steps=2000,
+                                 data_path="data",
+                                 mixingmetric_subsample=True
+                                 ):
+
+    print("Incrementally integrating %d datasets..." % len(lowdim_list))
+
+    if not search_cos:
+        # if not search hyperparameter lambdacos
+        if isinstance(lambda_cos, float) or isinstance(lambda_cos, int):
+            lambda_cos_tmp = lambda_cos
+
+        for i in range(len(lowdim_list) - 1):
+
+            if isinstance(lambda_cos, list):
+                lambda_cos_tmp = lambda_cos[i]
+
+            print("Integrating the %d-th dataset to the 1-st dataset..." % (i + 2))
+            model = Model(lambdacos=lambda_cos_tmp,
+                          training_steps=training_steps, 
+                          data_path=os.path.join(data_path, "preprocess"), 
+                          model_path="models/%d_datasets" % (i + 2), 
+                          result_path="results/%d_datasets" % (i + 2))
+            if i == 0:
+                model.emb_A = lowdim_list[0]
+            else:
+                model.emb_A = emb_total
+            model.emb_B = lowdim_list[i + 1]
+            model.train()
+            model.eval()
+            emb_total = model.data_Aspace
+    else:
+        for i in range(len(lowdim_list) - 1):
+            print("Integrating the %d-th dataset to the 1-st dataset..." % (i + 2))
+            for lambda_cos in [15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0]:
+                model = Model(lambdacos=lambda_cos,
+                              training_steps=training_steps, 
+                              data_path=os.path.join(data_path, "preprocess"), 
+                              model_path="models/%d_datasets" % (i + 2), 
+                              result_path="results/%d_datasets" % (i + 2))
+                if i == 0:
+                    model.emb_A = lowdim_list[0]
+                else:
+                    model.emb_A = emb_total
+                model.emb_B = lowdim_list[i + 1]
+                model.train()
+                model.eval()
+                meta = pd.DataFrame(index=np.arange(model.emb_A.shape[0] + model.emb_B.shape[0]))
+                meta["method"] = ["A"] * model.emb_A.shape[0] + ["B"] * model.emb_B.shape[0]
+                mixing = calculate_mixing_metric(model.latent, meta, k=5, max_k=300, methods=list(set(meta.method)), subsample=mixingmetric_subsample)
+                print("lambda_cos: %f, mixing metric: %f \n" % (lambda_cos, mixing))
+                if lambda_cos == 15.0:
+                    model_opt = model
+                    mixing_metric_opt = mixing
+                elif mixing < mixing_metric_opt:
+                    model_opt = model
+                    mixing_metric_opt = mixing
+            emb_total = model_opt.data_Aspace
+
+    expression_scaled = pca.inverse_transform(emb_total)
+    expression_log_normalized = expression_scaled * std + mean
+
+    return expression_scaled, expression_log_normalized
 
 
 def calculate_mixing_metric(data, meta, methods, k=5, max_k=300, subsample=True):
