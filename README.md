@@ -1,9 +1,14 @@
 # Portal
 [![DOI](https://zenodo.org/badge/423325112.svg)](https://zenodo.org/badge/latestdoi/423325112)
 
+*Adversarial domain translation networks for integrating large-scale atlas-level single-cell datasets*
+
 An efficient, accurate and flexible method for single-cell data integration.
 
-Preprint: [Adversarial domain translation networks for fast and accurate integration of large-scale atlas-level single-cell datasets](https://www.biorxiv.org/content/10.1101/2021.11.16.468892v2).
+Our manuscript is available at:
++ [Nature Computational Science website](https://www.nature.com/articles/s43588-022-00251-y)
++ [Read fulltext link](https://rdcu.be/cOCbU)
++ [Preprint at bioRxiv](https://www.biorxiv.org/content/10.1101/2021.11.16.468892v2)
 
 ## Reproducibility
 We provide [source codes](https://github.com/jiazhao97/Portal-reproducibility) for reproducing the experiments of the paper "Adversarial domain translation networks for fast and accurate integration of large-scale atlas-level single-cell datasets".
@@ -97,4 +102,4 @@ We provide demos for users to get a quick start: [Demo 1](https://jiazhao97.gith
 This package is developed by Jia Zhao (jzhaoaz@connect.ust.hk) and Gefei Wang (gwangas@connect.ust.hk). 
 
 ## Citation
-Jia Zhao, Gefei Wang, Jingsi Ming, Zhixiang Lin, Yang Wang, The Tabula Microcebus Consortium, Angela Ruohao Wu, Can Yang. Adversarial domain translation networks for fast and accurate integration of large-scale atlas-level single-cell datasets. bioRxiv 2021.11.16.468892; doi: [https://doi.org/10.1101/2021.11.16.468892](https://doi.org/10.1101/2021.11.16.468892).
+Jia Zhao, Gefei Wang, Jingsi Ming, Zhixiang Lin, Yang Wang, The Tabula Microcebus Consortium, Angela Ruohao Wu, Can Yang. Adversarial domain translation networks for integrating large-scale atlas-level single-cell datasets. Nature Computational Science 2, 317–330 (2022).
