@@ -5,10 +5,10 @@
 
 An efficient, accurate and flexible method for single-cell data integration.
 
-Our manuscript is available at:
+Check out our manuscript in Nature Computational Science:
 + [Nature Computational Science website](https://www.nature.com/articles/s43588-022-00251-y)
 + [Read fulltext link](https://rdcu.be/cOCbU)
-+ [Preprint at bioRxiv](https://www.biorxiv.org/content/10.1101/2021.11.16.468892v2)
++ [Preprint in bioRxiv](https://www.biorxiv.org/content/10.1101/2021.11.16.468892v2)
 
 ## Reproducibility
 We provide [source codes](https://github.com/jiazhao97/Portal-reproducibility) for reproducing the experiments of the paper "Adversarial domain translation networks for fast and accurate integration of large-scale atlas-level single-cell datasets".
