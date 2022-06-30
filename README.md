@@ -1,5 +1,5 @@
 # Portal
-[![DOI](https://zenodo.org/badge/423325112.svg)](https://zenodo.org/badge/latestdoi/423325112)
+[![DOI](https://zenodo.org/badge/423325112.svg)](https://zenodo.org/badge/latestdoi/423325112) [![PyPi version](https://badgen.net/pypi/v/portal-sc/)](https://pypi.org/project/portal-sc) [![PyPi license](https://badgen.net/pypi/license/portal-sc/)](https://pypi.org/project/portal-sc/)
 
 *Adversarial domain translation networks for integrating large-scale atlas-level single-cell datasets*
 
@@ -28,12 +28,17 @@ We provide [source codes](https://github.com/jiazhao97/Portal-reproducibility) f
 + [Integration of spermatogenesis differentiation process across multiple species](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-Spermatogenesis.html). Gene lists from Ensembl Biomart (we only use genes that are assigned with the type "ortholog_one2one" in the lists): [orthologues (human vs mouse)](https://github.com/jiazhao97/Portal-reproducibility/raw/main/orthologues_human_mouse.txt), [orthologues (human vs macaque)](https://github.com/jiazhao97/Portal-reproducibility/raw/main/orthologues_human_macaque.txt).
 
 ## Installation
-To run Portal, please follow the installation instruction:
+* To run Portal, please follow the installation instruction:
 ```bash
 git clone https://github.com/YangLabHKUST/Portal.git
 cd Portal
 conda env update --f environment.yml
 conda activate portal
+```
+
+* Portal can also be installed from PyPI:
+```bash
+pip install portal-sc
 ```
 Normally the installation time is less than 5 minutes.
 
