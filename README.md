@@ -1,5 +1,5 @@
 # Portal
-[![DOI](https://zenodo.org/badge/423325112.svg)](https://zenodo.org/badge/latestdoi/423325112) [![PyPi version](https://badgen.net/pypi/v/portal-sc/)](https://pypi.org/project/portal-sc/) [![PyPi license](https://badgen.net/pypi/license/portal-sc/)](https://pypi.org/project/portal-sc/) [![PyPI download month](https://img.shields.io/pypi/dm/portal-sc.svg)](https://pypi.python.org/pypi/portal-sc/)
+[![DOI](https://zenodo.org/badge/423325112.svg)](https://zenodo.org/badge/latestdoi/423325112) [![PyPi version](https://badgen.net/pypi/v/portal-sc/)](https://pypi.org/project/portal-sc/) [![PyPi license](https://badgen.net/pypi/license/portal-sc/)](https://pypi.org/project/portal-sc/) [![Downloads](https://pepy.tech/badge/portal-sc)](https://pepy.tech/project/portal-sc)
 
 *Adversarial domain translation networks for integrating large-scale atlas-level single-cell datasets*
 
