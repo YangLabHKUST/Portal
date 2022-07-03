@@ -1,5 +1,5 @@
 # Portal
-[![DOI](https://zenodo.org/badge/423325112.svg)](https://zenodo.org/badge/latestdoi/423325112) [![PyPI version fury.io](https://badge.fury.io/py/portal-sc.svg)](https://pypi.python.org/pypi/portal-sc/) [![PyPi license](https://badgen.net/pypi/license/portal-sc/)](https://pypi.org/project/portal-sc/) [![Downloads](https://pepy.tech/badge/portal-sc)](https://pepy.tech/project/portal-sc) [![Stars](https://img.shields.io/github/stars/YangLabHKUST/Portal?logo=GitHub&color=yellow)](https://github.com/YangLabHKUST/Portal/stargazers)
+[![DOI](https://zenodo.org/badge/423325112.svg)](https://zenodo.org/badge/latestdoi/423325112) [![PyPI version fury.io](https://badge.fury.io/py/portal-sc.svg)](https://pypi.python.org/pypi/portal-sc/) [![PyPi license](https://badgen.net/pypi/license/portal-sc/)](https://pypi.org/project/portal-sc/) [![Downloads](https://static.pepy.tech/personalized-badge/portal-sc?period=total&units=international_system&left_color=grey&right_color=orange&left_text=downloads)](https://pepy.tech/project/portal-sc) [![Stars](https://img.shields.io/github/stars/YangLabHKUST/Portal?logo=GitHub&color=yellow)](https://github.com/YangLabHKUST/Portal/stargazers) 
 
 *Adversarial domain translation networks for integrating large-scale atlas-level single-cell datasets*
 
