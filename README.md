@@ -28,7 +28,12 @@ We provide [source codes](https://github.com/jiazhao97/Portal-reproducibility) f
 + [Integration of spermatogenesis differentiation process across multiple species](https://htmlpreview.github.io/?https://github.com/jiazhao97/Portal-reproducibility/blob/main/Reproduce-Spermatogenesis.html). Gene lists from Ensembl Biomart (we only use genes that are assigned with the type "ortholog_one2one" in the lists): [orthologues (human vs mouse)](https://github.com/jiazhao97/Portal-reproducibility/raw/main/orthologues_human_mouse.txt), [orthologues (human vs macaque)](https://github.com/jiazhao97/Portal-reproducibility/raw/main/orthologues_human_macaque.txt).
 
 ## Installation
-* To run Portal, please follow the installation instruction:
+* Portal can be installed from PyPI:
+```bash
+pip install portal-sc
+```
+
+* Alternatively, Portal can also be downloaded from GitHub:
 ```bash
 git clone https://github.com/YangLabHKUST/Portal.git
 cd Portal
@@ -36,10 +41,6 @@ conda env update --f environment.yml
 conda activate portal
 ```
 
-* Portal can also be installed from PyPI:
-```bash
-pip install portal-sc
-```
 Normally the installation time is less than 5 minutes.
 
 ## Quick Start
